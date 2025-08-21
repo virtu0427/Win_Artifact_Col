@@ -1,7 +1,53 @@
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $artifactPath = Join-Path $scriptDirectory "All_Artifacts"
 
-<#
+$basicInfoPath = Join-Path $artifactPath "BasicInfo"
+if (!(Test-Path $basicInfoPath)) {
+    New-Item -Path $basicInfoPath -ItemType Directory | Out-Null
+}
+
+try {
+    Get-Date | Out-File -FilePath (Join-Path $basicInfoPath "Get-Date.txt") -Encoding UTF8
+} catch {
+    "Error collecting system time: $_" | Out-File -FilePath (Join-Path $basicInfoPath "Get-Date_error.txt") -Encoding UTF8
+}
+
+try {
+    Get-LocalUser | Out-File -FilePath (Join-Path $basicInfoPath "Get-LocalUser.txt") -Encoding UTF8
+} catch {
+    "Error collecting local user info: $_" | Out-File -FilePath (Join-Path $basicInfoPath "Get-LocalUser_error.txt") -Encoding UTF8
+}
+
+try {
+    net user | Out-File -FilePath (Join-Path $basicInfoPath "net_user.txt") -Encoding UTF8
+} catch {
+    "Error collecting net user info: $_" | Out-File -FilePath (Join-Path $basicInfoPath "net_user_error.txt") -Encoding UTF8
+}
+
+try {
+    Get-LocalGroupMember -Group "Administrators" | Out-File -FilePath (Join-Path $basicInfoPath "Get-LocalGroupMember_Administrators.txt") -Encoding UTF8
+} catch {
+    "Error collecting administrators group info: $_" | Out-File -FilePath (Join-Path $basicInfoPath "Get-LocalGroupMember_Administrators_error.txt") -Encoding UTF8
+}
+
+try {
+    Get-CimInstance -ClassName Win32_StartupCommand | Out-File -FilePath (Join-Path $basicInfoPath "Get-StartupCommand.txt") -Encoding UTF8
+} catch {
+    "Error collecting startup commands: $_" | Out-File -FilePath (Join-Path $basicInfoPath "Get-StartupCommand_error.txt") -Encoding UTF8
+}
+
+try {
+    reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" | Out-File -FilePath (Join-Path $basicInfoPath "HKLM_Run.txt") -Encoding UTF8
+} catch {
+    "Error collecting HKLM Run registry: $_" | Out-File -FilePath (Join-Path $basicInfoPath "HKLM_Run_error.txt") -Encoding UTF8
+}
+
+try {
+    reg query "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" | Out-File -FilePath (Join-Path $basicInfoPath "HKCU_Run.txt") -Encoding UTF8
+} catch {
+    "Error collecting HKCU Run registry: $_" | Out-File -FilePath (Join-Path $basicInfoPath "HKCU_Run_error.txt") -Encoding UTF8
+}
+
 $pcInfoPath = Join-Path $artifactPath "PCInfo"
 if (!(Test-Path $pcInfoPath)) {
     New-Item -Path $pcInfoPath -ItemType Directory | Out-Null
@@ -24,9 +70,7 @@ try {
 } catch {
     "Error collecting device info: $_" | Out-File -FilePath (Join-Path $pcInfoPath "Get-PnpDevice_error.txt") -Encoding UTF8
 }
-#>
 
-<#
 $webArtifactPath = Join-Path $artifactPath "Web_Artifact"
 if (!(Test-Path $webArtifactPath)) {
     New-Item -Path $webArtifactPath -ItemType Directory | Out-Null
@@ -73,9 +117,7 @@ foreach ($browser in $browserInfo) {
         }
     }
 }
-#>
 
-<#
 $netInfoPath = Join-Path $artifactPath "NetInfo"
 if (!(Test-Path $netInfoPath)) {
     New-Item -Path $netInfoPath -ItemType Directory | Out-Null
@@ -99,10 +141,8 @@ foreach ($file in $netCommands.Keys) {
         "Error running command: $cmd" | Out-File -FilePath $outputFile -Encoding UTF8
     }
 }
-#>
 
 
-<#
 $registryHives = @(
     "HKLM\SAM",
     "HKLM\SYSTEM",
@@ -122,4 +162,3 @@ foreach ($hive in $registryHives) {
     $outputFile = Join-Path $artifactPath "$safeHiveName.reg"
     reg export $hive $outputFile /y | Out-Null
 }
-#>
