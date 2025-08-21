@@ -2,6 +2,31 @@ $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $artifactPath = Join-Path $scriptDirectory "All_Artifacts"
 
 <#
+$pcInfoPath = Join-Path $artifactPath "PCInfo"
+if (!(Test-Path $pcInfoPath)) {
+    New-Item -Path $pcInfoPath -ItemType Directory | Out-Null
+}
+
+try {
+    Get-ComputerInfo | Out-File -FilePath (Join-Path $pcInfoPath "Get-ComputerInfo.txt") -Encoding UTF8
+} catch {
+    "Error collecting OS info: $_" | Out-File -FilePath (Join-Path $pcInfoPath "Get-ComputerInfo_error.txt") -Encoding UTF8
+}
+
+try {
+    systeminfo | Out-File -FilePath (Join-Path $pcInfoPath "systeminfo.txt") -Encoding UTF8
+} catch {
+    "Error collecting systeminfo: $_" | Out-File -FilePath (Join-Path $pcInfoPath "systeminfo_error.txt") -Encoding UTF8
+}
+
+try {
+    Get-PnpDevice | Out-File -FilePath (Join-Path $pcInfoPath "Get-PnpDevice.txt") -Encoding UTF8
+} catch {
+    "Error collecting device info: $_" | Out-File -FilePath (Join-Path $pcInfoPath "Get-PnpDevice_error.txt") -Encoding UTF8
+}
+#>
+
+<#
 $webArtifactPath = Join-Path $artifactPath "Web_Artifact"
 if (!(Test-Path $webArtifactPath)) {
     New-Item -Path $webArtifactPath -ItemType Directory | Out-Null
