@@ -1,7 +1,56 @@
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $artifactPath = Join-Path $scriptDirectory "All_Artifacts"
 
+<#
+$webArtifactPath = Join-Path $artifactPath "Web_Artifact"
+if (!(Test-Path $webArtifactPath)) {
+    New-Item -Path $webArtifactPath -ItemType Directory | Out-Null
+}
 
+$browserInfo = @(
+    @{
+        Name = "Chrome"
+        UserDataPath = "$env:LOCALAPPDATA\Google\Chrome\User Data"
+        HistoryRelPath = "Default\History"
+        CacheRelPath = "Default\Cache"
+    },
+    @{
+        Name = "Edge"
+        UserDataPath = "$env:LOCALAPPDATA\Microsoft\Edge\User Data"
+        HistoryRelPath = "Default\History"
+        CacheRelPath = "Default\Cache"
+    }
+)
+
+foreach ($browser in $browserInfo) {
+    $browserFolder = Join-Path $webArtifactPath $browser.Name
+    if (!(Test-Path $browserFolder)) {
+        New-Item -Path $browserFolder -ItemType Directory | Out-Null
+    }
+
+    $historySrc = Join-Path $browser.UserDataPath $browser.HistoryRelPath
+    $historyDst = Join-Path $browserFolder "History"
+    if (Test-Path $historySrc) {
+        try {
+            Copy-Item -Path $historySrc -Destination $historyDst -Force
+        } catch {
+            "Error copying history file for $($browser.Name): $_" | Out-File -FilePath (Join-Path $browserFolder "history_copy_error.txt") -Encoding UTF8
+        }
+    }
+
+    $cacheSrc = Join-Path $browser.UserDataPath $browser.CacheRelPath
+    $cacheDst = Join-Path $browserFolder "Cache"
+    if (Test-Path $cacheSrc) {
+        try {
+            Copy-Item -Path $cacheSrc -Destination $cacheDst -Recurse -Force
+        } catch {
+            "Error copying cache folder for $($browser.Name): $_" | Out-File -FilePath (Join-Path $browserFolder "cache_copy_error.txt") -Encoding UTF8
+        }
+    }
+}
+#>
+
+<#
 $netInfoPath = Join-Path $artifactPath "NetInfo"
 if (!(Test-Path $netInfoPath)) {
     New-Item -Path $netInfoPath -ItemType Directory | Out-Null
@@ -25,7 +74,7 @@ foreach ($file in $netCommands.Keys) {
         "Error running command: $cmd" | Out-File -FilePath $outputFile -Encoding UTF8
     }
 }
-
+#>
 
 
 <#
